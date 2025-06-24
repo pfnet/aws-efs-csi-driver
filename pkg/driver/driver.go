@@ -31,10 +31,12 @@ import (
 )
 
 const (
-	driverName = "efs.csi.aws.com"
-
 	// AgentNotReadyTaintKey contains the key of taints to be removed on driver startup
 	AgentNotReadyNodeTaintKey = "efs.csi.aws.com/agent-not-ready"
+)
+
+var (
+	driverName string
 )
 
 type Driver struct {
@@ -56,11 +58,13 @@ type Driver struct {
 	lockManager              LockManagerMap
 }
 
-func NewDriver(endpoint, efsUtilsCfgPath, efsUtilsStaticFilesPath, tags string, volMetricsOptIn bool, volMetricsRefreshPeriod float64, volMetricsFsRateLimit int, deleteAccessPointRootDir bool, adaptiveRetryMode bool) *Driver {
+func NewDriver(endpoint, efsUtilsCfgPath, efsUtilsStaticFilesPath, tags string, volMetricsOptIn bool, volMetricsRefreshPeriod float64, volMetricsFsRateLimit int, deleteAccessPointRootDir bool, adaptiveRetryMode bool, name string) *Driver {
 	cloud, err := cloud.NewCloud(adaptiveRetryMode)
 	if err != nil {
 		klog.Fatalln(err)
 	}
+
+	driverName = name
 
 	nodeCaps := SetNodeCapOptInFeatures(volMetricsOptIn)
 	watchdog := newExecWatchdog(efsUtilsCfgPath, efsUtilsStaticFilesPath, "amazon-efs-mount-watchdog")
