@@ -1,0 +1,42 @@
+# V3.0.0
+* Add support for Amazon S3 Files ([#1828](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1828), [@DavidXU12345](https://github.com/DavidXU12345))
+* Add debugLogs param to increase verbose level and enable debug logging in efs-utils
+* Disallow crossaccount to be manually configured in mountOptions
+* Remove updateStrategy configuration
+* Deprecate path as volume attribute
+* Honor stderrthreshold when logtostderr is enabled ([#1822](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1822), [@pierluigilenoci](https://github.com/pierluigilenoci))
+* Add stricter filtering for filesystem accesspoint([#1796](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1796), [@DavidXU12345](https://github.com/DavidXU12345))
+
+# V3.0.1
+* Upgrade sidecar and go dependencies to fix critical CVEs ([#1847](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1847), [@DavidXU12345](https://github.com/DavidXU12345))
+* Add helm updateStrategy to DaemonSet and strategy to Deployment ([#1846](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1846), [@camaeel](https://github.com/camaeel))
+* Validate mountTargetIp as a valid IP address in NodePublishVolume ([#1844](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1844), [@DavidXU12345](https://github.com/DavidXU12345))
+
+# V3.1.0
+* Make hyperpod nodes retrieve metadata from kubernetes api instead of IMDS ([#1820](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1820), [@zmaguire](https://github.com/zmaguire))
+* fix: Avoid random mounttargetip for cross-account EFS mounts ([#1861](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1861), [@vmishra22](https://github.com/vmishra22))
+* Add FIPS validation: disallow users to set useFIPS when they are in non-US/CA regions ([#1862](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1862), [@DavidXU12345](https://github.com/DavidXU12345))
+* Expose S3Files and EFS CloudWatch logs enabled config in CSI driver ([#1866](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1866), [@DavidXU12345](https://github.com/DavidXU12345))
+
+# V3.2.0
+* Expose s3filesCloudWatchMetricsEnabled parameter ([#1873](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1873), [@DavidXU12345](https://github.com/DavidXU12345))
+* Use pagination for EFS DescribeAccessPoints ([#1876](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1876), [@DavidXU12345](https://github.com/DavidXU12345))
+* Add --efs-utils-conf-overrides and --s3files-utils-conf-overrides CLI flags ([#1880](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1880), [@DavidXU12345](https://github.com/DavidXU12345))
+* Upgrade go version to fix CVE ([#1885](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1885), [@DavidXU12345](https://github.com/DavidXU12345))
+
+# V3.3.0
+* feat: add configurable health probes for controller and node components ([#1720](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1720), [@vagharsh](https://github.com/vagharsh))
+* fix(e2e): validate encryptInTransit via efs-proxy --tls flag ([#1878](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1878), [@YangjinanHu](https://github.com/YangjinanHu))
+* fix: add explicit divisor to resourceFieldRef to prevent perpetual diff ([#1899](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1899), [@DavidXU12345](https://github.com/DavidXU12345))
+
+# V3.4.0
+* Add support for API metrics in the EFS CSI Driver ([#1903](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1903), [@andersvw](https://github.com/andersvw))
+* reuseAccessPoint precheck must validate the existing access point against the requested StorageClass constraints instead of binding to it unconditionally ([#1912](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1912), [@zmaguire](https://github.com/zmaguire))
+* feat: add enableTagging StorageClass parameter ([#1916](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1916), [@ABBennett](https://github.com/ABBennett))
+* chart: Add selectorLabels helper ([#1917](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1917), [@YangjinanHu](https://github.com/YangjinanHu))
+
+# V3.4.1
+* Validate access point filesystem ownership in DeleteVolume ([#1926](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1926), [@DavidXU12345](https://github.com/DavidXU12345))
+
+# V3.4.2
+* Reject empty PVC name when reuseAccessPoint is set ([#1927](https://github.com/kubernetes-sigs/aws-efs-csi-driver/pull/1927), [@DavidXU12345](https://github.com/DavidXU12345))

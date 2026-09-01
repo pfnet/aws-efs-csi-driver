@@ -12,15 +12,20 @@ metadata:
     {{- end }}
 spec:
   replicas: {{ .Values.controller.replicaCount }}
+  {{- if or (kindIs "float64" .Values.controller.revisionHistoryLimit) (kindIs "int64" .Values.controller.revisionHistoryLimit) }}
+  revisionHistoryLimit: {{ .Values.controller.revisionHistoryLimit }}
+  {{- end }}
+  {{- if .Values.controller.rollingUpdate }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      {{- toYaml .Values.controller.rollingUpdate | nindent 6 }}
+  {{- end }}
   selector:
     matchLabels:
       app: {{ .Values.controller.name }}
       app.kubernetes.io/name: {{ include "aws-efs-csi-driver.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
-  {{- with .Values.controller.updateStrategy }}
-  strategy:
-    {{ toYaml . | nindent 4 }}
-  {{- end }}
   template:
     metadata:
       labels:
@@ -30,8 +35,15 @@ spec:
         {{- with .Values.controller.podLabels }}
         {{ toYaml . | nindent 8 }}
         {{- end }}
-      {{- with .Values.controller.podAnnotations }}
-      annotations: {{- toYaml . | nindent 8 }}
+      {{- if or .Values.controller.podAnnotations (and .Values.controller.enableMetrics .Values.controller.enablePrometheusAnnotations) }}
+      annotations:
+        {{- with .Values.controller.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if and .Values.controller.enableMetrics .Values.controller.enablePrometheusAnnotations }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3301"
+        {{- end }}
       {{- end }}
     spec:
       {{- if hasKey .Values.controller "hostNetwork" }}
@@ -79,6 +91,10 @@ spec:
             {{- end }}
             - --v={{ .Values.controller.logLevel }}
             - --delete-access-point-root-dir={{ hasKey .Values.controller "deleteAccessPointRootDir" | ternary .Values.controller.deleteAccessPointRootDir false }}
+            - --debug-logs={{ .Values.debugLogs }}
+            {{- if .Values.controller.enableMetrics }}
+            - --http-endpoint=0.0.0.0:3301
+            {{- end }}
           env:
             - name: CSI_ENDPOINT
               value: unix:///var/lib/csi/sockets/pluginproxy/csi.sock
@@ -109,14 +125,27 @@ spec:
             - name: healthz
               containerPort: {{ .Values.controller.healthPort }}
               protocol: TCP
+            {{- if .Values.controller.enableMetrics }}
+            - name: metrics
+              containerPort: 3301
+              protocol: TCP
+            {{- end }}
+          {{- with .Values.controller.livenessProbe }}
           livenessProbe:
-            httpGet:
-              path: /healthz
-              port: healthz
-            initialDelaySeconds: 10
-            timeoutSeconds: 3
-            periodSeconds: 10
-            failureThreshold: 5
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.controller.readinessProbe }}
+          {{- if not (empty .Values.controller.readinessProbe) }}
+          readinessProbe:
+            {{- toYaml .Values.controller.readinessProbe | nindent 12 }}
+          {{- end }}
+          {{- end }}
+          {{- if .Values.controller.startupProbe }}
+          {{- if not (empty .Values.controller.startupProbe) }}
+          startupProbe:
+            {{- toYaml .Values.controller.startupProbe | nindent 12 }}
+          {{- end }}
+          {{- end }}
           {{- with .Values.controller.resources }}
           resources: {{ toYaml . | nindent 12 }}
           {{- end }}
@@ -180,7 +209,11 @@ spec:
           {{- end }}
       volumes:
         - name: socket-dir
+          {{- if .Values.controller.socketDirVolume }}
+          {{- toYaml .Values.controller.socketDirVolume | nindent 10 }}
+          {{- else }}
           emptyDir: {}
+          {{- end }}
         {{- with .Values.controller.volumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
