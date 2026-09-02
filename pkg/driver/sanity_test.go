@@ -22,6 +22,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"k8s.io/mount-utils"
 
@@ -71,16 +72,18 @@ func TestSanityEFSCSI(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockCloud := cloud.NewFakeCloudProvider()
 	drv := Driver{
-		endpoint:        endpoint,
-		nodeID:          "sanity",
-		mounter:         NewFakeMounter(),
-		efsWatchdog:     &mockWatchdog{},
-		cloud:           mockCloud,
-		nodeCaps:        nodeCaps,
-		volMetricsOptIn: true,
-		volStatter:      NewVolStatter(),
-		gidAllocator:    NewGidAllocator(),
-		lockManager:     NewLockManagerMap(),
+		endpoint:             endpoint,
+		driverName:           "efs.csi.aws.com",
+		nodeID:               "sanity",
+		mounter:              NewFakeMounter(),
+		efsWatchdog:          &mockWatchdog{},
+		cloud:                mockCloud,
+		nodeCaps:             nodeCaps,
+		volMetricsOptIn:      true,
+		volStatter:           NewVolStatter(),
+		gidAllocator:         NewGidAllocator(),
+		lockManager:          NewLockManagerMap(),
+		inFlightMountTracker: NewInFlightMountTracker(UnsetMaxInflightMountCounts),
 	}
 	defer func() {
 		if r := recover(); r != nil {
@@ -99,10 +102,20 @@ func TestSanityEFSCSI(t *testing.T) {
 	mockCtrl.Finish()
 }
 
+type FakeMounterForceUnmounter struct {
+	*mount.FakeMounter
+}
+
+func (f *FakeMounterForceUnmounter) UnmountWithForce(target string, umountTimeout time.Duration) error {
+	return f.Unmount(target)
+}
+
 func NewFakeMounter() Mounter {
 	return &NodeMounter{
-		Interface: &mount.FakeMounter{
-			MountPoints: []mount.MountPoint{},
+		MounterForceUnmounter: &FakeMounterForceUnmounter{
+			FakeMounter: &mount.FakeMounter{
+				MountPoints: []mount.MountPoint{},
+			},
 		},
 	}
 }
